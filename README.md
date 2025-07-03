@@ -1,58 +1,58 @@
 # Plane Crash Visualization
 
-Eine Full-Stack-Webanwendung zur Visualisierung und Analyse von Flugzeugabsturzdaten. Das Projekt besteht aus einem ASP.NET Core Backend mit SQL Server LocalDB und einem Vue.js Frontend.
+A full-stack web application for visualizing and analyzing aircraft crash data. The project consists of an ASP.NET Core backend with SQL Server LocalDB and a Vue.js frontend.
 
-## 📋 Voraussetzungen
+## 📋 Prerequisites
 
-### Erforderliche Software
+### Required Software
 
 #### .NET Development
-- **.NET 9.0 SDK** oder höher
+- **.NET 9.0 SDK** or higher
   - Download: [https://dotnet.microsoft.com/download/dotnet/9.0](https://dotnet.microsoft.com/download/dotnet/9.0)
-  - Überprüfung: `dotnet --version`
+  - Check: `dotnet --version`
 
 #### Frontend Development
-- **Node.js** (Version 18.x oder höher)
+- **Node.js** (Version 18.x or higher)
   - Download: [https://nodejs.org/](https://nodejs.org/)
-  - Überprüfung: `node --version`
-- **npm** (kommt mit Node.js)
-  - Überprüfung: `npm --version`
+  - Check: `node --version`
+- **npm** (comes with Node.js)
+  - Check: `npm --version`
 
-#### Datenbank
-- **SQL Server LocalDB** (empfohlen) oder SQL Server Express
-  - Kommt mit Visual Studio oder separat installierbar
+#### Database
+- **SQL Server LocalDB** (recommended) or SQL Server Express
+  - Comes with Visual Studio or can be installed separately
   - Alternative: SQL Server Express
   - Download: [https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/sql-server-express-localdb](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/sql-server-express-localdb)
 
-#### Entwicklungsumgebung (Optional)
-- **Visual Studio 2022** oder **Visual Studio Code**
-- **Git** für Versionskontrolle
+#### Development Environment (Optional)
+- **Visual Studio 2022** or **Visual Studio Code**
+- **Git** for version control
 
-## 🏗️ Projektstruktur
+## 🏗️ Project Structure
 
 ```
 Plane-Crash-Visualization/
 ├── Controllers/              # ASP.NET Core API Controllers
-├── Data/                    # Datenbank-Kontext und CSV-Daten
-├── Models/                  # C# Datenmodelle
-├── Services/                # Business Logic Services
-├── Migrations/              # Entity Framework Migrationen
+├── Data/                    # Database context and CSV data
+├── Models/                  # C# data models
+├── Services/                # Business logic services
+├── Migrations/              # Entity Framework migrations
 ├── PlaneCrashVisualizationClient/  # Vue.js Frontend
 │   ├── src/
-│   │   ├── components/      # Vue-Komponenten
-│   │   ├── views/          # Seiten/Views
-│   │   ├── services/       # API-Services
-│   │   └── utils/          # Hilfsfunktionen
+│   │   ├── components/      # Vue components
+│   │   ├── views/          # Pages/Views
+│   │   ├── services/       # API services
+│   │   └── utils/          # Utility functions
 │   ├── package.json
 │   └── vite.config.js
-├── Program.cs              # Backend Entry Point
-├── appsettings.json        # Konfiguration
+├── Program.cs              # Backend entry point
+├── appsettings.json        # Configuration
 └── README.md
 ```
 
-## 🚀 Installation und Setup
+## 🚀 Installation and Setup
 
-### 1. Repository klonen
+### 1. Clone Repository
 
 ```bash
 git clone <repository-url>
@@ -61,13 +61,13 @@ cd Plane-Crash-Visualization
 
 ### 2. Backend Setup
 
-#### Abhängigkeiten installieren
+#### Install Dependencies
 ```bash
 dotnet restore
 ```
 
-#### Datenbank konfigurieren
-Die Anwendung verwendet SQL Server LocalDB. Die Verbindungszeichenfolge in `appsettings.json`:
+#### Configure Database
+The application uses SQL Server LocalDB. Connection string in `appsettings.json`:
 
 ```json
 {
@@ -77,19 +77,19 @@ Die Anwendung verwendet SQL Server LocalDB. Die Verbindungszeichenfolge in `apps
 }
 ```
 
-#### Datenbank erstellen
-**Wichtig**: Führen Sie diesen Schritt vor dem ersten Start aus!
+#### Create Database
+**Important**: Execute this step before first startup!
 
 ```bash
 sqlcmd -S "(localdb)\mssqllocaldb" -i "Data\skript.sql"
 ```
 
-#### Entity Framework Tools installieren (falls nicht vorhanden)
+#### Install Entity Framework Tools (if not present)
 ```bash
 dotnet tool install --global dotnet-ef
 ```
 
-#### Backend bauen und testen
+#### Build and Test Backend
 ```bash
 dotnet build
 ```
@@ -101,148 +101,156 @@ cd PlaneCrashVisualizationClient
 npm install
 ```
 
-### 4. Anwendung starten
+### 4. Start Application
 
-#### Backend starten (Terminal 1)
+#### Start Backend (Terminal 1)
 ```bash
-# Im Hauptverzeichnis
+# In main directory
 dotnet run
 ```
-Das Backend läuft auf: `http://localhost:5021`
+Backend runs on: `http://localhost:5021`
 
-#### Frontend starten (Terminal 2)
+#### Start Frontend (Terminal 2)
 ```bash
-# Im PlaneCrashVisualizationClient Verzeichnis
+# In PlaneCrashVisualizationClient directory
 cd PlaneCrashVisualizationClient
 npm run dev
 ```
-Das Frontend läuft auf: `http://localhost:5173`
+Frontend runs on: `http://localhost:5173`
 
 ## 📊 Features
 
 ### Backend (ASP.NET Core Web API)
-- **RESTful API** für Flugzeugabsturzdaten
-- **Entity Framework Core** für Datenbankzugriff
-- **SQL Server LocalDB** Integration
-- **Automatischer CSV-Import** beim ersten Start
-- **Geocoding Service** für Koordinaten
-- **CORS-Unterstützung** für Frontend-Integration
+- **RESTful API** for aircraft crash data
+- **Entity Framework Core** for database access
+- **SQL Server LocalDB** integration
+- **Automatic CSV import** on first startup
+- **Geocoding service** for coordinates
+- **CORS support** for frontend integration
+- **Swagger/OpenAPI** documentation
 
 ### Frontend (Vue.js 3)
-- **Interactive Map** mit Leaflet.js
-- **Charts und Visualisierungen** mit Chart.js
-- **Responsive Design** mit Bootstrap 5
-- **Erweiterte Suchfunktionen**
-- **Trend-Analysen und Statistiken**
-- **Echtzeit-Datenfilterung**
+- **Interactive map** with Leaflet.js
+- **Charts and visualizations** with Chart.js
+- **Responsive design** with Bootstrap 5
+- **Advanced search functions**
+- **Trend analysis and statistics**
+- **Real-time data filtering**
 
-## 🔧 Verwendete Technologien
+## 🔧 Technologies Used
 
 ### Backend
-- **ASP.NET Core 9.0** - Web API Framework
+- **ASP.NET Core 9.0** - Web API framework
 - **Entity Framework Core 9.0** - ORM
-- **SQL Server LocalDB** - Datenbank
-- **CsvHelper** - CSV-Datenverarbeitung
-- **Microsoft.Data.SqlClient** - Datenbankverbindung
+- **SQL Server LocalDB** - Database
+- **CsvHelper** - CSV data processing
+- **Swashbuckle.AspNetCore** - Swagger/OpenAPI documentation
+- **Microsoft.Data.SqlClient** - Database connection
 
 ### Frontend
-- **Vue.js 3** - Frontend Framework
-- **Vite** - Build Tool
+- **Vue.js 3** - Frontend framework
+- **Vite** - Build tool
 - **Vue Router** - Navigation
-- **Axios** - HTTP Client
-- **Leaflet.js** - Interaktive Karten
-- **Chart.js** - Datenvisualisierung
-- **Bootstrap 5** - UI Framework
+- **Axios** - HTTP client
+- **Leaflet.js** - Interactive maps
+- **Chart.js** - Data visualization
+- **Bootstrap 5** - UI framework
 - **Bootstrap Icons** - Icons
 
-## 🗃️ Datenbank
+## 🗃️ Database
 
-### Manuelle Datenbankinitialisierung
-**Wichtig**: Die Datenbank muss vor dem ersten Start der Anwendung manuell erstellt werden.
+### Manual Database Initialization
+**Important**: The database must be created manually before the first application startup.
 
-#### Datenbank mit SQL-Skript erstellen
-Führen Sie den folgenden Befehl im Terminal/Eingabeaufforderung aus:
+#### Create Database with SQL Script
+Run the following command in Terminal/Command Prompt:
 
 ```bash
 sqlcmd -S "(localdb)\mssqllocaldb" -i "Data\skript.sql"
 ```
 
-**Hinweise:**
-- Stellen Sie sicher, dass SQL Server LocalDB installiert und gestartet ist
-- Der Pfad zur `skript.sql` muss relativ zum aktuellen Verzeichnis korrekt sein
-- Das Skript erstellt die Datenbank `PlaneCrashDB` mit allen Tabellen und Daten
+**Notes:**
+- Ensure SQL Server LocalDB is installed and running
+- The path to `skript.sql` must be correct relative to the current directory
+- The script creates the `PlaneCrashDB` database with all tables and data
 
 #### Alternative: SQL Server Management Studio (SSMS)
-1. Öffnen Sie SSMS
-2. Verbinden Sie sich mit `(localdb)\mssqllocaldb`
-3. Öffnen Sie die Datei `Data/skript.sql`
-4. Führen Sie das Skript aus (F5)
+1. Open SSMS
+2. Connect to `(localdb)\mssqllocaldb`
+3. Open the file `Data/skript.sql`
+4. Execute the script (F5)
 
-### Datenmodell
-- **Crashes** - Haupttabelle mit Absturzdaten
-- **Felder**: Datum, Ort, Fluggesellschaft, Flugzeugtyp, Passagiere, Opfer, etc.
-- **Koordinaten** für Kartenvisualisierung
-- **Hersteller/Modell-Extraktion** aus Flugzeugtyp
+### Data Model
+- **Crashes** - Main table with crash data
+- **Fields**: Date, location, airline, aircraft type, passengers, casualties, etc.
+- **Coordinates** for map visualization
+- **Manufacturer/model extraction** from aircraft type
 
-## 🌐 API-Endpunkte
+## 🌐 API Endpoints
 
-### Hauptendpunkte
-- `GET /api/crashes` - Alle Abstürze mit Filteroptionen
-- `GET /api/crashes/map-data` - Daten für Kartenvisualisierung
-- `GET /api/crashes/summary` - Zusammenfassungsstatistiken
-- `GET /api/crashes/by-year` - Abstürze nach Jahr
-- `GET /api/crashes/by-operator` - Abstürze nach Fluggesellschaft
-- `GET /api/crashes/most-common-aircraft` - Häufigste Flugzeugmodelle
-- `GET /api/crashes/most-common-manufacturers` - Häufigste Hersteller
-- `GET /api/crashes/by-continent` - Abstürze nach Kontinent
+### API Documentation
+- **Swagger UI**: `http://localhost:5021/swagger/index.html`
+  - Interactive API documentation
+  - Direct endpoint testing available
+  - Complete request/response schemas
+
+### Main Endpoints
+- `GET /api/crashes` - All crashes with filter options
+- `GET /api/crashes/map-data` - Data for map visualization
+- `GET /api/crashes/summary` - Summary statistics
+- `GET /api/crashes/by-year` - Crashes by year
+- `GET /api/crashes/by-operator` - Crashes by airline
+- `GET /api/crashes/most-common-aircraft` - Most common aircraft models
+- `GET /api/crashes/most-common-manufacturers` - Most common manufacturers
+- `GET /api/crashes/by-continent` - Crashes by continent
 
 ## 🔍 Troubleshooting
 
-### Häufige Probleme
+### Common Issues
 
-#### Backend startet nicht
-- Überprüfen Sie, ob .NET 9.0 SDK installiert ist: `dotnet --version`
-- Stellen Sie sicher, dass Port 5021 nicht belegt ist
+#### Backend doesn't start
+- Check if .NET 9.0 SDK is installed: `dotnet --version`
+- Ensure port 5021 is not occupied
 
-#### Datenbankfehler
-- Überprüfen Sie, ob SQL Server LocalDB läuft
-- Stellen Sie sicher, dass die Datenbank mit dem SQL-Skript erstellt wurde:
+#### Database errors
+- Check if SQL Server LocalDB is running
+- Ensure the database was created with the SQL script:
   ```bash
   sqlcmd -S "(localdb)\mssqllocaldb" -i "Data\skript.sql"
   ```
-- Prüfen Sie die Verbindungszeichenfolge in `appsettings.json`
+- Check the connection string in `appsettings.json`
 
-#### Frontend lädt nicht
-- Überprüfen Sie, ob Node.js installiert ist: `node --version`
-- Löschen Sie `node_modules` und führen Sie `npm install` erneut aus
-- Stellen Sie sicher, dass das Backend auf Port 5021 läuft
+#### Frontend doesn't load
+- Check if Node.js is installed: `node --version`
+- Delete `node_modules` and run `npm install` again
+- Ensure the backend is running on port 5021
 
-#### API-Fehler (400 Bad Request)
-- Stellen Sie sicher, dass die Datenbank mit dem SQL-Skript erstellt wurde
-- Das Backend benötigt Daten in der Datenbank - diese sind im SQL-Skript enthalten
-- Überprüfen Sie die Browser-Konsole für detaillierte Fehlermeldungen
+#### API errors (400 Bad Request)
+- Ensure the database was created with the SQL script
+- The backend requires data in the database - this is included in the SQL script
+- Check the browser console for detailed error messages
 
-## 📝 Entwicklung
+## 📝 Development
 
-### Neue Features hinzufügen
-1. Backend: Controller/Services erweitern
-2. Frontend: Neue Views/Komponenten erstellen
-3. API-Integration mit Axios
+### Adding New Features
+1. Backend: Extend controllers/services
+2. Frontend: Create new views/components
+3. API integration with Axios
 
-### Datenbank-Änderungen
+### Database Changes
 ```bash
 dotnet ef migrations add MigrationName
 dotnet ef database update
 ```
 
-## 📄 Lizenz
+## 📄 License
 
-[Lizenzinformationen hier einfügen]
+[Insert license information here]
 
-## 🤝 Beiträge
+## 🤝 Contributing
 
-Beiträge sind willkommen! Bitte erstellen Sie einen Pull Request oder öffnen Sie ein Issue.
+Contributions are welcome! Please create a pull request or open an issue.
 
 ---
 
-**Hinweis**: Diese Anwendung dient zu Bildungs- und Analysezwecken. Die Daten stammen aus öffentlichen Quellen und dienen der historischen Dokumentation von Luftfahrtereignissen.
+**Note**: This application serves educational and analytical purposes. The data comes from public sources and serves for historical documentation of aviation events.
