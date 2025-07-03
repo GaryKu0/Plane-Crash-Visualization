@@ -27,29 +27,119 @@ namespace Plane_Crash_Visualization.Controllers
             [FromQuery] string? fields = null,
             [FromQuery] int? startYear = null,
             [FromQuery] int? endYear = null,
+            [FromQuery] DateTime? dateFrom = null,
+            [FromQuery] DateTime? dateTo = null,
+            [FromQuery] string? location = null,
             [FromQuery] string? operator_ = null,
+            [FromQuery] string? flight = null,
+            [FromQuery] string? route = null,
+            [FromQuery] string? registration = null,
+            [FromQuery] string? cn_ln = null,
             [FromQuery] string? manufacturer = null,
-            [FromQuery] int? limit = null)
+            [FromQuery] string? acModel = null,
+            [FromQuery] int? minAboard = null,
+            [FromQuery] int? maxAboard = null,
+            [FromQuery] int? minFatalities = null,
+            [FromQuery] int? maxFatalities = null,
+            [FromQuery] int? minGround = null,
+            [FromQuery] int? maxGround = null,
+            [FromQuery] int? minAboardCrew = null,
+            [FromQuery] int? maxAboardCrew = null,
+            [FromQuery] int? minAboardPassengers = null,
+            [FromQuery] int? maxAboardPassengers = null,
+            [FromQuery] int? minFatalitiesCrew = null,
+            [FromQuery] int? maxFatalitiesCrew = null,
+            [FromQuery] int? minFatalitiesPassengers = null,
+            [FromQuery] int? maxFatalitiesPassengers = null,
+            [FromQuery] int? limit = null,
+            [FromQuery] int? offset = null)
         {
             var query = _context.Crashes.AsQueryable();
 
-            // Apply filters
+            // Apply date filters
             if (startYear.HasValue)
                 query = query.Where(c => c.Date.HasValue && c.Date.Value.Year >= startYear.Value);
             
             if (endYear.HasValue)
                 query = query.Where(c => c.Date.HasValue && c.Date.Value.Year <= endYear.Value);
+                
+            if (dateFrom.HasValue)
+                query = query.Where(c => c.Date.HasValue && c.Date.Value >= dateFrom.Value);
+                
+            if (dateTo.HasValue)
+                query = query.Where(c => c.Date.HasValue && c.Date.Value <= dateTo.Value);
             
+            // Apply text filters
+            if (!string.IsNullOrEmpty(location))
+                query = query.Where(c => c.Location != null && c.Location.Contains(location));
+                
             if (!string.IsNullOrEmpty(operator_))
                 query = query.Where(c => c.Operator != null && c.Operator.Contains(operator_));
-            
+                
+            if (!string.IsNullOrEmpty(flight))
+                query = query.Where(c => c.Flight != null && c.Flight.Contains(flight));
+                
+            if (!string.IsNullOrEmpty(route))
+                query = query.Where(c => c.Route != null && c.Route.Contains(route));
+                
+            if (!string.IsNullOrEmpty(registration))
+                query = query.Where(c => c.Registration != null && c.Registration.Contains(registration));
+                
+            if (!string.IsNullOrEmpty(cn_ln))
+                query = query.Where(c => c.Cn_ln != null && c.Cn_ln.Contains(cn_ln));
+
             if (!string.IsNullOrEmpty(manufacturer))
                 query = query.Where(c => c.Manufacturer != null && c.Manufacturer.Contains(manufacturer));
+                
+            if (!string.IsNullOrEmpty(acModel))
+                query = query.Where(c => c.AC_Model != null && c.AC_Model.Contains(acModel));
 
+            // Apply numeric range filters
+            if (minAboard.HasValue)
+                query = query.Where(c => (c.Aboard ?? 0) >= minAboard.Value);
+            if (maxAboard.HasValue)
+                query = query.Where(c => (c.Aboard ?? 0) <= maxAboard.Value);
+                
+            if (minFatalities.HasValue)
+                query = query.Where(c => (c.Fatalities ?? 0) >= minFatalities.Value);
+            if (maxFatalities.HasValue)
+                query = query.Where(c => (c.Fatalities ?? 0) <= maxFatalities.Value);
+                
+            if (minGround.HasValue)
+                query = query.Where(c => (c.Ground ?? 0) >= minGround.Value);
+            if (maxGround.HasValue)
+                query = query.Where(c => (c.Ground ?? 0) <= maxGround.Value);
+                
+            if (minAboardCrew.HasValue)
+                query = query.Where(c => (c.AboardCrew ?? 0) >= minAboardCrew.Value);
+            if (maxAboardCrew.HasValue)
+                query = query.Where(c => (c.AboardCrew ?? 0) <= maxAboardCrew.Value);
+                
+            if (minAboardPassengers.HasValue)
+                query = query.Where(c => (c.AboardPassengers ?? 0) >= minAboardPassengers.Value);
+            if (maxAboardPassengers.HasValue)
+                query = query.Where(c => (c.AboardPassengers ?? 0) <= maxAboardPassengers.Value);
+                
+            if (minFatalitiesCrew.HasValue)
+                query = query.Where(c => (c.FatalitiesCrew ?? 0) >= minFatalitiesCrew.Value);
+            if (maxFatalitiesCrew.HasValue)
+                query = query.Where(c => (c.FatalitiesCrew ?? 0) <= maxFatalitiesCrew.Value);
+                
+            if (minFatalitiesPassengers.HasValue)
+                query = query.Where(c => (c.FatalitiesPassengers ?? 0) >= minFatalitiesPassengers.Value);
+            if (maxFatalitiesPassengers.HasValue)
+                query = query.Where(c => (c.FatalitiesPassengers ?? 0) <= maxFatalitiesPassengers.Value);
+
+            // Apply pagination
+            if (offset.HasValue)
+                query = query.Skip(offset.Value);
+                
             if (limit.HasValue)
                 query = query.Take(limit.Value);
+            else
+                query = query.Take(1000); // Default limit to prevent large responses
 
-            var crashes = await query.OrderBy(c => c.Date).ToListAsync();
+            var crashes = await query.OrderByDescending(c => c.Date).ToListAsync();
 
             // Return selected fields or full objects
             if (!string.IsNullOrEmpty(fields))
@@ -58,7 +148,30 @@ namespace Plane_Crash_Visualization.Controllers
                 return Ok(crashes.Select(c => SelectFields(c, fieldList)));
             }
 
-            return Ok(crashes);
+            return Ok(crashes.Select(c => new {
+                id = c.Id,
+                date = c.Date?.ToString("yyyy-MM-dd"),
+                time = c.Time,
+                location = c.Location,
+                latitude = c.Latitude,
+                longitude = c.Longitude,
+                operator_ = c.Operator,
+                flight = c.Flight,
+                route = c.Route,
+                ac_type = c.AC_Type,
+                manufacturer = c.Manufacturer,
+                ac_model = c.AC_Model,
+                registration = c.Registration,
+                cn_ln = c.Cn_ln,
+                aboard = c.Aboard,
+                aboardPassengers = c.AboardPassengers,
+                aboardCrew = c.AboardCrew,
+                fatalities = c.Fatalities,
+                fatalitiesPassengers = c.FatalitiesPassengers,
+                fatalitiesCrew = c.FatalitiesCrew,
+                ground = c.Ground,
+                summary = c.Summary
+            }));
         }
 
         // GET: api/crashes/summary
@@ -79,6 +192,48 @@ namespace Plane_Crash_Visualization.Controllers
                 TotalPassengerFatalities = await _context.Crashes.SumAsync(c => c.FatalitiesPassengers ?? 0),
                 TotalCrewFatalities = await _context.Crashes.SumAsync(c => c.FatalitiesCrew ?? 0),
                 DateRange = new { From = firstCrash, To = lastCrash }
+            });
+        }
+
+        // GET: api/crashes/statistics
+        [HttpGet("statistics")]
+        public async Task<ActionResult<object>> GetStatistics()
+        {
+            var crashes = await _context.Crashes.ToListAsync();
+            
+            var yearRange = crashes
+                .Where(c => c.Date.HasValue)
+                .Select(c => c.Date!.Value.Year)
+                .ToList();
+                
+            var fatalitiesRange = crashes
+                .Select(c => c.Fatalities ?? 0)
+                .ToList();
+                
+            var passengersRange = crashes
+                .Select(c => c.AboardPassengers ?? 0)
+                .ToList();
+                
+            var crewRange = crashes
+                .Select(c => c.AboardCrew ?? 0)
+                .ToList();
+                
+            var aboardRange = crashes
+                .Select(c => c.Aboard ?? 0)
+                .ToList();
+                
+            var groundRange = crashes
+                .Select(c => c.Ground ?? 0)
+                .ToList();
+
+            return Ok(new
+            {
+                yearRange = new { min = yearRange.Any() ? yearRange.Min() : 1920, max = yearRange.Any() ? yearRange.Max() : DateTime.Now.Year },
+                fatalitiesRange = new { min = fatalitiesRange.Any() ? fatalitiesRange.Min() : 0, max = fatalitiesRange.Any() ? fatalitiesRange.Max() : 600 },
+                passengersRange = new { min = passengersRange.Any() ? passengersRange.Min() : 0, max = passengersRange.Any() ? passengersRange.Max() : 500 },
+                crewRange = new { min = crewRange.Any() ? crewRange.Min() : 0, max = crewRange.Any() ? crewRange.Max() : 50 },
+                aboardRange = new { min = aboardRange.Any() ? aboardRange.Min() : 0, max = aboardRange.Any() ? aboardRange.Max() : 600 },
+                groundRange = new { min = groundRange.Any() ? groundRange.Min() : 0, max = groundRange.Any() ? groundRange.Max() : 100 }
             });
         }
 

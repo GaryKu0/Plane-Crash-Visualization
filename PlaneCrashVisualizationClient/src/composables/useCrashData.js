@@ -5,6 +5,7 @@ export function useCrashData() {
   const crashData = ref([])
   const operators = ref([])
   const manufacturers = ref([])
+  const statistics = ref(null)
   const loading = ref(false)
   const error = ref(null)
 
@@ -26,6 +27,15 @@ export function useCrashData() {
     }
   }
 
+  const fetchStatistics = async () => {
+    try {
+      statistics.value = await crashApi.getStatistics()
+    } catch (err) {
+      console.error('Failed to fetch statistics:', err)
+      error.value = 'Failed to load statistics'
+    }
+  }
+
   const fetchCrashData = async (filterParams) => {
     try {
       loading.value = true
@@ -43,7 +53,8 @@ export function useCrashData() {
   const initializeData = async () => {
     await Promise.all([
       fetchOperators(),
-      fetchManufacturers()
+      fetchManufacturers(),
+      fetchStatistics()
     ])
   }
 
@@ -51,6 +62,7 @@ export function useCrashData() {
     crashData,
     operators,
     manufacturers,
+    statistics,
     loading,
     error,
     fetchCrashData,

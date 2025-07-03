@@ -7,20 +7,18 @@
         <div class="mb-4">
           <label class="form-label small">Year Range</label>
           <DualRangeSlider
-            v-model="yearRange"
             :min="filterConfig.YEAR_RANGE.MIN"
             :max="filterConfig.YEAR_RANGE.MAX"
-            @change="handleYearRangeChange"
+            v-model="filters.yearRange"
           />
         </div>
         
         <div class="mb-4">
           <label class="form-label small">Fatalities Range</label>
           <DualRangeSlider
-            v-model="fatalitiesRange"
             :min="filterConfig.FATALITIES_RANGE.MIN"
             :max="filterConfig.FATALITIES_RANGE.MAX"
-            @change="handleFatalitiesRangeChange"
+            v-model="filters.fatalitiesRange"
           />
         </div>
         
@@ -58,7 +56,7 @@
 
 <script setup>
 import { ref, computed, defineProps, defineEmits } from 'vue'
-import { FILTER_CONFIG } from '../constants/index.js'
+import { FILTER_CONFIG, createFilterConfig } from '../constants/index.js'
 import DualRangeSlider from './DualRangeSlider.vue'
 
 const props = defineProps({
@@ -73,34 +71,18 @@ const props = defineProps({
   manufacturers: {
     type: Array,
     default: () => []
+  },
+  statistics: {
+    type: Object,
+    default: () => null
   }
 })
 
 const emit = defineEmits(['update:filters'])
 
-// Make FILTER_CONFIG available to template
-const filterConfig = FILTER_CONFIG
-
-const yearRange = computed({
-  get: () => ({
-    start: props.filters.yearStart,
-    end: props.filters.yearEnd
-  }),
-  set: (value) => {
-    updateFilter('yearStart', value.start)
-    updateFilter('yearEnd', value.end)
-  }
-})
-
-const fatalitiesRange = computed({
-  get: () => ({
-    start: props.filters.minFatalities,
-    end: props.filters.maxFatalities
-  }),
-  set: (value) => {
-    updateFilter('minFatalities', value.start)
-    updateFilter('maxFatalities', value.end)
-  }
+// Create dynamic filter config based on statistics, fallback to static config
+const filterConfig = computed(() => {
+  return props.statistics ? createFilterConfig(props.statistics) : FILTER_CONFIG
 })
 
 const updateFilter = (key, value) => {
@@ -108,14 +90,6 @@ const updateFilter = (key, value) => {
     ...props.filters,
     [key]: value
   })
-}
-
-const handleYearRangeChange = (value) => {
-  yearRange.value = value
-}
-
-const handleFatalitiesRangeChange = (value) => {
-  fatalitiesRange.value = value
 }
 </script>
 

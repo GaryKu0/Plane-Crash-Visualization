@@ -5,6 +5,7 @@
       :filters="filters"
       :operators="operators"
       :manufacturers="manufacturers"
+      :statistics="statistics"
       @update:filters="handleFiltersUpdate"
     />
 
@@ -38,12 +39,13 @@ import MapLegend from '../components/MapLegend.vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 
 // Composables
-const { filters, buildApiParams } = useMapFilters()
+const { filters, updateFiltersWithStatistics, buildApiParams } = useMapFilters()
 const { initializeMap, loadMarkers, destroyMap } = useMap()
 const { 
   crashData, 
   operators, 
   manufacturers, 
+  statistics,
   loading, 
   error, 
   fetchCrashData, 
@@ -92,6 +94,12 @@ onUnmounted(() => {
 
 // Watchers
 watch(filters, debouncedFetchData, { deep: true })
+
+watch(statistics, (newStatistics) => {
+  if (newStatistics) {
+    updateFiltersWithStatistics(newStatistics)
+  }
+}, { immediate: true })
 
 watch(crashData, (newData) => {
   if (newData && newData.length > 0) {
