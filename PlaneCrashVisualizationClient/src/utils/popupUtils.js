@@ -7,6 +7,20 @@ export function formatDate(dateString) {
   }
 }
 
+export function formatTime(time) {
+  if (!time) return 'Unknown Time'
+  
+  // Convert time to string and pad with zeros if needed
+  const timeStr = time.toString().padStart(4, '0')
+  
+  // Extract hours and minutes
+  const hours = timeStr.slice(0, 2)
+  const minutes = timeStr.slice(2, 4)
+  
+  // Return formatted time
+  return `${hours}:${minutes}`
+}
+
 export function formatValue(value, defaultValue = 'Unknown') {
   return value || defaultValue
 }
@@ -23,7 +37,7 @@ export function createPopupContent(crash) {
       <div class="row mb-2">
         <div class="col-6">
           <small><strong>Time:</strong></small><br>
-          <span>${formatValue(crash.time)}</span>
+          <span>${formatTime(crash.time)}</span>
         </div>
         <div class="col-6">
           <small><strong>Location:</strong></small><br>

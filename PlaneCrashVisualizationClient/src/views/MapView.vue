@@ -105,11 +105,11 @@ watch(statistics, (newStatistics) => {
 }, { immediate: true })
 
 watch(crashData, (newData) => {
-  if (newData && newData.length > 0) {
+  if (newData) {
     loadMarkers(newData)
     
     // Check if we need to highlight and open popup for a specific crash
-    if (route.query.highlight && route.query.openPopup === 'true') {
+    if (newData.length > 0 && route.query.highlight && route.query.openPopup === 'true') {
       const crashId = parseInt(route.query.highlight)
       highlightCrash(crashId)
     }
@@ -181,5 +181,10 @@ watch(() => route.query, (newQuery) => {
 }
 :deep(.marker-cluster-large div) {
   background-color: rgba(241, 128, 23, 0.6);
+}
+
+/* Ensure no body scrolling when map is active */
+:deep(body) {
+  overflow: hidden;
 }
 </style>

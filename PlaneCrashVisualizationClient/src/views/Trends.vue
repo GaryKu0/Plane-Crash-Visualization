@@ -129,7 +129,43 @@
         <div class="col-lg-12 mb-3">
         <div class="card">
           <div class="card-header">
-            <h5 class="card-title mb-0">Casualties by Operator</h5>
+            <h5 class="card-title mb-3">Casualties by Operator</h5>
+            <div class="year-range-controls">
+              <div class="row align-items-center">
+                <div class="col-md-9">
+                  <div class="range-slider-container">
+                    <input 
+                      type="range" 
+                      class="form-range range-min" 
+                      :min="minAvailableYear" 
+                      :max="maxAvailableYear"
+                      v-model="selectedOperatorMinYear"
+                      @input="onOperatorYearRangeChange"
+                    >
+                    <input 
+                      type="range" 
+                      class="form-range range-max" 
+                      :min="minAvailableYear" 
+                      :max="maxAvailableYear"
+                      v-model="selectedOperatorMaxYear"
+                      @input="onOperatorYearRangeChange"
+                    >
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="d-flex flex-column align-items-end">
+                    <div class="mb-1">
+                      <small class="text-muted">From: </small>
+                      <span class="fw-bold">{{ selectedOperatorMinYear }}</span>
+                    </div>
+                    <div>
+                      <small class="text-muted">To: </small>
+                      <span class="fw-bold">{{ selectedOperatorMaxYear }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="card-body">
             <div class="chart-container" style="height: 400px;">
@@ -174,27 +210,65 @@
         <div class="col-lg-12 mb-3">
         <div class="card">
           <div class="card-header">
-            <h5 class="card-title mb-0">Most Common Manufacturers</h5>
+            <div class="d-flex align-items-center position-relative">
+              <!-- Empty left spacer for balance -->
+              <div style="flex: 1;"></div>
+              <!-- Centered title -->
+              <h5 class="card-title mb-0">Most Common Manufacturers</h5>
+              <!-- Right side controls with same flex width as left spacer -->
+              <div style="flex: 1;" class="d-flex justify-content-end align-items-center">
+                <label for="manufacturerRowsSelect" class="form-label me-2 mb-0 small">Show:</label>
+                <select 
+                  id="manufacturerRowsSelect" 
+                  class="form-select form-select-sm" 
+                  v-model="manufacturerRowsToShow"
+                  style="width: auto;"
+                >
+                  <option value="5">5 rows</option>
+                  <option value="10">10 rows</option>
+                  <option value="15">15 rows</option>
+                  <option value="20">20 rows</option>
+                  <option value="25">25 rows</option>
+                  <option value="50">50 rows</option>
+                </select>
+              </div>
+            </div>
           </div>
           <div class="card-body">
             <div class="table-responsive">
-              <table class="table table-sm">
+              <table class="table table-sm table-hover">
                 <thead>
                   <tr>
-                    <th>Rank</th>
-                    <th>Manufacturer</th>
-                    <th>Crashes</th>
-                    <th>Fatality Rate</th>
+                    <th style="width: 60px;">#</th>
+                    <th class="sortable" @click="sortManufacturers('name')">
+                      Manufacturer
+                      <i class="bi" :class="getSortIcon('name')"></i>
+                    </th>
+                    <th class="sortable" @click="sortManufacturers('crashes')">
+                      Crashes
+                      <i class="bi" :class="getSortIcon('crashes')"></i>
+                    </th>
+                    <th class="sortable" @click="sortManufacturers('fatalities')">
+                      Fatalities
+                      <i class="bi" :class="getSortIcon('fatalities')"></i>
+                    </th>
+                    <th class="sortable" @click="sortManufacturers('fatalityRate')">
+                      Fatality Rate
+                      <i class="bi" :class="getSortIcon('fatalityRate')"></i>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(manufacturer, index) in topManufacturers.slice(0, 15)" :key="manufacturer.manufacturerName">
-                    <td>{{ index + 1 }}</td>
+                  <tr v-for="(manufacturer, index) in sortedAndFilteredManufacturers" :key="manufacturer.manufacturerName">
+                    <td class="text-center text-muted">{{ index + 1 }}</td>
                     <td class="text-truncate" style="max-width: 200px;" :title="manufacturer.manufacturerName">
                       {{ manufacturer.manufacturerName || 'Unknown' }}
                     </td>
                     <td>
                       <span class="badge bg-warning text-dark">{{ manufacturer.crashCount }}</span>
+                    </td>
+                    <td>
+                      <span class="badge bg-danger">{{ manufacturer.totalFatalities ? manufacturer.totalFatalities.toLocaleString() : '0' }}</span>
                     </td>
                     <td>
                       <span v-if="manufacturer.fatalityRate !== null" class="text-muted">
@@ -204,7 +278,7 @@
                     </td>
                   </tr>
                   <tr v-if="topManufacturers.length === 0">
-                    <td colspan="4" class="text-center text-muted">Loading manufacturer data...</td>
+                    <td colspan="5" class="text-center text-muted">Loading manufacturer data...</td>
                   </tr>
                 </tbody>
               </table>
@@ -219,7 +293,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onBeforeUnmount } from 'vue'
+import { ref, onMounted, watch, onBeforeUnmount, computed } from 'vue'
 import axios from 'axios'
 import {
   Chart as ChartJS,
@@ -272,6 +346,15 @@ const minAvailableYear = ref(1908)
 const maxAvailableYear = ref(new Date().getFullYear())
 const selectedMinYear = ref(2015)
 const selectedMaxYear = ref(new Date().getFullYear())
+
+// Operator year range controls (separate from crashes by year)
+const selectedOperatorMinYear = ref(1908)
+const selectedOperatorMaxYear = ref(new Date().getFullYear())
+
+// Manufacturer table controls
+const manufacturerRowsToShow = ref(15)
+const manufacturerSortField = ref('crashes')
+const manufacturerSortDirection = ref('desc')
 
 // Chart.js instances
 let yearChartInstance = null
@@ -350,7 +433,14 @@ const fetchCrashesByYear = async () => {
 // Fetch top airlines data
 const fetchTopAirlines = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/crashes/by-operator?limit=10`)
+    // Build URL with year parameters
+    const params = new URLSearchParams({
+      limit: '10',
+      startYear: selectedOperatorMinYear.value.toString(),
+      endYear: selectedOperatorMaxYear.value.toString()
+    })
+    
+    const response = await axios.get(`${API_BASE_URL}/crashes/by-operator?${params}`)
     topAirlines.value = response.data.map(item => ({
       name: item.operator,
       incidents: item.crashCount,
@@ -367,7 +457,8 @@ const fetchTopAirlines = async () => {
 const fetchMostCommonManufacturers = async () => {
   try {
     console.log('Fetching manufacturers data...')
-    const response = await axios.get(`${API_BASE_URL}/crashes/most-common-manufacturers?limit=15`)
+    // Increase the limit to allow for more data to be available for sorting/filtering
+    const response = await axios.get(`${API_BASE_URL}/crashes/most-common-manufacturers?limit=50`)
     console.log('Manufacturers API response:', response.data)
     
     topManufacturers.value = response.data.map(item => ({
@@ -455,6 +546,24 @@ const onYearRangeChange = () => {
   }, 100) // Reduced from 300ms to 100ms for better responsiveness
 }
 
+// Handle operator year range changes
+const onOperatorYearRangeChange = () => {
+  // Ensure min is not greater than max
+  if (parseInt(selectedOperatorMinYear.value) > parseInt(selectedOperatorMaxYear.value)) {
+    selectedOperatorMinYear.value = selectedOperatorMaxYear.value
+  }
+  
+  // Update the visual range indicator for operator slider
+  updateOperatorRangeSliderStyles()
+  
+  // Debounce chart update
+  clearTimeout(window.operatorYearRangeTimeout)
+  window.operatorYearRangeTimeout = setTimeout(async () => {
+    await fetchTopAirlines()
+    initializeOperatorChart()
+  }, 300)
+}
+
 // Update range slider visual styles
 const updateRangeSliderStyles = () => {
   const min = parseInt(selectedMinYear.value)
@@ -470,6 +579,26 @@ const updateRangeSliderStyles = () => {
   if (container) {
     container.style.setProperty('--range-min', `${leftPercent}%`)
     container.style.setProperty('--range-max', `${rightPercent}%`)
+  }
+}
+
+// Update operator range slider visual styles
+const updateOperatorRangeSliderStyles = () => {
+  const min = parseInt(selectedOperatorMinYear.value)
+  const max = parseInt(selectedOperatorMaxYear.value)
+  const rangeMin = parseInt(minAvailableYear.value)
+  const rangeMax = parseInt(maxAvailableYear.value)
+  
+  const leftPercent = ((min - rangeMin) / (rangeMax - rangeMin)) * 100
+  const rightPercent = ((rangeMax - max) / (rangeMax - rangeMin)) * 100
+  
+  // Update CSS custom properties for the active range on operator slider
+  const operatorContainers = document.querySelectorAll('.range-slider-container')
+  if (operatorContainers.length > 1) {
+    // The second range-slider-container is for the operator chart
+    const operatorContainer = operatorContainers[1]
+    operatorContainer.style.setProperty('--range-min', `${leftPercent}%`)
+    operatorContainer.style.setProperty('--range-max', `${rightPercent}%`)
   }
 }
 
@@ -863,6 +992,74 @@ const fetchAllData = async () => {
   }
 }
 
+// Manufacturer table sorting and filtering functions
+const sortManufacturers = (field) => {
+  if (manufacturerSortField.value === field) {
+    // Toggle direction if same field
+    manufacturerSortDirection.value = manufacturerSortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    // Set new field and default to descending for numeric fields, ascending for text
+    manufacturerSortField.value = field
+    manufacturerSortDirection.value = field === 'name' ? 'asc' : 'desc'
+  }
+}
+
+const getSortIcon = (field) => {
+  if (manufacturerSortField.value !== field) {
+    return 'bi-arrow-down-up text-muted'
+  }
+  return manufacturerSortDirection.value === 'asc' ? 'bi-arrow-up text-primary' : 'bi-arrow-down text-primary'
+}
+
+const sortedAndFilteredManufacturers = computed(() => {
+  let sorted = [...topManufacturers.value]
+  
+  // Sort the data
+  sorted.sort((a, b) => {
+    let aValue, bValue
+    
+    switch (manufacturerSortField.value) {
+      case 'name':
+        aValue = (a.manufacturerName || 'Unknown').toLowerCase()
+        bValue = (b.manufacturerName || 'Unknown').toLowerCase()
+        break
+      case 'crashes':
+        aValue = a.crashCount || 0
+        bValue = b.crashCount || 0
+        break
+      case 'fatalities':
+        aValue = a.totalFatalities || 0
+        bValue = b.totalFatalities || 0
+        break
+      case 'fatalityRate':
+        aValue = a.fatalityRate || 0
+        bValue = b.fatalityRate || 0
+        break
+      default:
+        return 0
+    }
+    
+    if (aValue < bValue) {
+      return manufacturerSortDirection.value === 'asc' ? -1 : 1
+    }
+    if (aValue > bValue) {
+      return manufacturerSortDirection.value === 'asc' ? 1 : -1
+    }
+    return 0
+  })
+  
+  // Limit the number of rows
+  return sorted.slice(0, parseInt(manufacturerRowsToShow.value))
+})
+
+// Watch for operator year range changes
+watch([selectedOperatorMinYear, selectedOperatorMaxYear], async () => {
+  console.log('Operator year range changed to:', selectedOperatorMinYear.value, '-', selectedOperatorMaxYear.value)
+  updateOperatorRangeSliderStyles()
+  await fetchTopAirlines()
+  initializeOperatorChart()
+})
+
 // Watch for year range changes
 watch([selectedMinYear, selectedMaxYear], () => {
   console.log('Year range changed to:', selectedMinYear.value, '-', selectedMaxYear.value)
@@ -875,6 +1072,7 @@ onMounted(() => {
   // Initialize range slider styles after a short delay to ensure DOM is ready
   setTimeout(() => {
     updateRangeSliderStyles()
+    updateOperatorRangeSliderStyles()
   }, 200)
 })
 
@@ -1136,5 +1334,25 @@ onBeforeUnmount(() => {
   z-index: 0;
   left: var(--range-min);
   right: var(--range-max);
+}
+
+/* Sortable table headers */
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.sortable:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.sortable i {
+  margin-left: 5px;
+  font-size: 0.8em;
+}
+
+.table-hover tbody tr:hover td {
+  background-color: rgba(0, 0, 0, 0.02);
 }
 </style>

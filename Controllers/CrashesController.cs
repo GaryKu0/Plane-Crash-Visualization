@@ -263,10 +263,26 @@ namespace Plane_Crash_Visualization.Controllers
 
         // GET: api/crashes/by-operator
         [HttpGet("by-operator")]
-        public async Task<ActionResult<IEnumerable<object>>> GetCrashesByOperator([FromQuery] int limit = 20)
+        public async Task<ActionResult<IEnumerable<object>>> GetCrashesByOperator(
+            [FromQuery] int limit = 20,
+            [FromQuery] int? startYear = null,
+            [FromQuery] int? endYear = null)
         {
-            var crashesByOperator = await _context.Crashes
-                .Where(c => !string.IsNullOrEmpty(c.Operator))
+            var query = _context.Crashes
+                .Where(c => !string.IsNullOrEmpty(c.Operator));
+
+            // Apply year filtering if provided
+            if (startYear.HasValue)
+            {
+                query = query.Where(c => c.Date.HasValue && c.Date.Value.Year >= startYear.Value);
+            }
+
+            if (endYear.HasValue)
+            {
+                query = query.Where(c => c.Date.HasValue && c.Date.Value.Year <= endYear.Value);
+            }
+
+            var crashesByOperator = await query
                 .GroupBy(c => c.Operator)
                 .Select(g => new
                 {
