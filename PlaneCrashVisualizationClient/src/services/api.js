@@ -163,7 +163,7 @@ export const crashApi = {
 
   async getCrashById(id) {
     try {
-      const response = await axios.get(`${BASE_URL}/crashes/${id}`)
+      const response = await axios.get(`${BASE_URL}${ENDPOINTS.SEARCH}/${id}`)
       return response.data
     } catch (error) {
       handleApiError(error, 'fetch crash details')

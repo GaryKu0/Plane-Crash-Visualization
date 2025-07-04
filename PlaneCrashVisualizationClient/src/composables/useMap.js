@@ -13,6 +13,7 @@ export function useMap() {
   const route = useRoute()
   let map = null
   let markerClusterGroup = null
+  let markersMap = new Map() // Store markers by crash ID
 
   const initializeMap = () => {
     // Initialize map
@@ -41,6 +42,7 @@ export function useMap() {
 
     // Clear existing markers
     markerClusterGroup.clearLayers()
+    markersMap.clear()
     
     // Add crash markers
     crashData.forEach(crash => {
@@ -52,7 +54,33 @@ export function useMap() {
       
       marker.bindPopup(createPopupContent(crash))
       markerClusterGroup.addLayer(marker)
+      
+      // Store marker with crash ID for later reference
+      if (crash.id) {
+        markersMap.set(crash.id, marker)
+      }
     })
+  }
+
+  const highlightCrash = (crashId) => {
+    if (!markersMap.has(crashId)) return
+    
+    const marker = markersMap.get(crashId)
+    
+    // Wait a bit for the map to fully load and zoom, then open popup
+    setTimeout(() => {
+      // Ensure the marker is visible (uncluster if needed)
+      if (markerClusterGroup.hasLayer(marker)) {
+        // If marker is in a cluster, zoom in until it's visible
+        markerClusterGroup.zoomToShowLayer(marker, () => {
+          // Open the popup after the zoom animation
+          marker.openPopup()
+        })
+      } else {
+        // Marker is already visible, just open popup
+        marker.openPopup()
+      }
+    }, 500)
   }
 
   const destroyMap = () => {
@@ -60,12 +88,14 @@ export function useMap() {
       map.remove()
       map = null
       markerClusterGroup = null
+      markersMap.clear()
     }
   }
 
   return {
     initializeMap,
     loadMarkers,
+    highlightCrash,
     destroyMap,
     getMap: () => map
   }

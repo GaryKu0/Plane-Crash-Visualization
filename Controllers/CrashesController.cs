@@ -654,5 +654,53 @@ namespace Plane_Crash_Visualization.Controllers
 
             return Ok(crashesByContinent);
         }
+
+        // GET: api/crashes/most-common-manufacturers
+        [HttpGet("most-common-manufacturers")]
+        public async Task<ActionResult<IEnumerable<object>>> GetMostCommonManufacturers([FromQuery] int limit = 10)
+        {
+            var manufacturerStats = await _context.Crashes
+                .Where(c => !string.IsNullOrEmpty(c.Manufacturer))
+                .GroupBy(c => c.Manufacturer)
+                .Select(g => new
+                {
+                    ManufacturerName = g.Key,
+                    CrashCount = g.Count(),
+                    TotalFatalities = g.Sum(c => c.Fatalities ?? 0),
+                    TotalAboard = g.Sum(c => c.Aboard ?? 0),
+                    FatalityRate = g.Sum(c => c.Aboard ?? 0) > 0 
+                        ? (double)g.Sum(c => c.Fatalities ?? 0) / g.Sum(c => c.Aboard ?? 0) * 100 
+                        : (double?)null
+                })
+                .OrderByDescending(x => x.CrashCount)
+                .Take(limit)
+                .ToListAsync();
+
+            return Ok(manufacturerStats);
+        }
+
+        // GET: api/crashes/most-common-aircraft
+        [HttpGet("most-common-aircraft")]
+        public async Task<ActionResult<IEnumerable<object>>> GetMostCommonAircraft([FromQuery] int limit = 10)
+        {
+            var aircraftStats = await _context.Crashes
+                .Where(c => !string.IsNullOrEmpty(c.AC_Type))
+                .GroupBy(c => c.AC_Type)
+                .Select(g => new
+                {
+                    AircraftType = g.Key,
+                    CrashCount = g.Count(),
+                    TotalFatalities = g.Sum(c => c.Fatalities ?? 0),
+                    TotalAboard = g.Sum(c => c.Aboard ?? 0),
+                    FatalityRate = g.Sum(c => c.Aboard ?? 0) > 0 
+                        ? (double)g.Sum(c => c.Fatalities ?? 0) / g.Sum(c => c.Aboard ?? 0) * 100 
+                        : (double?)null
+                })
+                .OrderByDescending(x => x.CrashCount)
+                .Take(limit)
+                .ToListAsync();
+
+            return Ok(aircraftStats);
+        }
     }
 }

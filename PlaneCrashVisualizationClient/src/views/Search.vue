@@ -643,8 +643,9 @@ const showOnMap = (result) => {
       query: {
         lat: result.latitude,
         lng: result.longitude,
-        zoom: 10,
-        highlight: result.id
+        zoom: 12,
+        highlight: result.id,
+        openPopup: 'true'
       }
     })
   }

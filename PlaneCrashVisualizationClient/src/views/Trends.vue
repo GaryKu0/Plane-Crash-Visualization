@@ -54,7 +54,7 @@
           <div class="card text-center border-warning">
             <div class="card-body">
               <div class="text-warning mb-2">
-                <i class="bi bi-calendar-year" style="font-size: 2rem;"></i>
+                <i class="bi bi-calendar-x-fill" style="font-size: 2rem;"></i>
               </div>
               <h3 class="card-title text-warning">{{ stats.worstYear }}</h3>
               <p class="card-text text-muted">Worst Year</p>
@@ -69,7 +69,7 @@
               <i class="bi bi-airplane" style="font-size: 2rem;"></i>
             </div>
             <h3 class="card-title text-info">{{ stats.commonAircraft }}</h3>
-            <p class="card-text text-muted">Most Common Aircraft</p>
+            <p class="card-text text-muted">Most Common Manufacturer</p>
           </div>
         </div>
       </div>
@@ -170,49 +170,8 @@
       </div>
 
       <div class="row mb-3">
-        <!-- Most Common Aircraft Models -->
-        <div class="col-lg-6 mb-3">
-        <div class="card">
-          <div class="card-header">
-            <h5 class="card-title mb-0">Most Common Aircraft Models</h5>
-          </div>
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="table table-sm">
-                <thead>
-                  <tr>
-                    <th>Rank</th>
-                    <th>Aircraft Model</th>
-                    <th>Crashes</th>
-                    <th>Fatality Rate</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(aircraft, index) in topAircraft.slice(0, 10)" :key="aircraft.aircraftModel">
-                    <td>{{ index + 1 }}</td>
-                    <td class="text-truncate" style="max-width: 150px;" :title="aircraft.aircraftModel">
-                      {{ aircraft.aircraftModel || 'Unknown' }}
-                    </td>
-                    <td>
-                      <span class="badge bg-warning text-dark">{{ aircraft.crashCount }}</span>
-                    </td>
-                    <td>
-                      <span v-if="aircraft.fatalityRate !== null" class="text-muted">
-                        {{ aircraft.fatalityRate.toFixed(1) }}%
-                      </span>
-                      <span v-else class="text-muted">N/A</span>
-                    </td>
-                  </tr>
-                  <tr v-if="topAircraft.length === 0">
-                    <td colspan="4" class="text-center text-muted">Loading aircraft data...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>        <!-- Most Common Manufacturers -->
-        <div class="col-lg-6 mb-3">
+        <!-- Most Common Manufacturers -->
+        <div class="col-lg-12 mb-3">
         <div class="card">
           <div class="card-header">
             <h5 class="card-title mb-0">Most Common Manufacturers</h5>
@@ -229,13 +188,13 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(manufacturer, index) in topManufacturers.slice(0, 10)" :key="manufacturer.manufacturerName">
+                  <tr v-for="(manufacturer, index) in topManufacturers.slice(0, 15)" :key="manufacturer.manufacturerName">
                     <td>{{ index + 1 }}</td>
-                    <td class="text-truncate" style="max-width: 150px;" :title="manufacturer.manufacturerName">
+                    <td class="text-truncate" style="max-width: 200px;" :title="manufacturer.manufacturerName">
                       {{ manufacturer.manufacturerName || 'Unknown' }}
                     </td>
                     <td>
-                      <span class="badge bg-info text-dark">{{ manufacturer.crashCount }}</span>
+                      <span class="badge bg-warning text-dark">{{ manufacturer.crashCount }}</span>
                     </td>
                     <td>
                       <span v-if="manufacturer.fatalityRate !== null" class="text-muted">
@@ -253,7 +212,7 @@
           </div>
         </div>
       </div>
-    </div>
+      </div>
       </div>
     </div>
   </div>
@@ -324,13 +283,12 @@ const stats = ref({
   totalCrashes: 0,
   totalFatalities: 0,
   totalAboard: 0,
-  worstYear: 0,
+  worstYear: 'Loading...',
   commonAircraft: 'Loading...'
 })
 
 const crashesByYear = ref([])
 const topAirlines = ref([])
-const topAircraft = ref([])
 const topManufacturers = ref([])
 const continentData = ref([])
 const regions = ref([])
@@ -405,35 +363,13 @@ const fetchTopAirlines = async () => {
   }
 }
 
-// Fetch most common aircraft data
-const fetchMostCommonAircraft = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/crashes/most-common-aircraft?limit=15`)
-    topAircraft.value = response.data.map(item => ({
-      aircraftType: item.aircraftType,
-      crashCount: item.crashCount,
-      totalFatalities: item.totalFatalities,
-      totalAboard: item.totalAboard,
-      fatalityRate: item.fatalityRate
-    }))
-    
-    // Update common aircraft in stats
-    if (topAircraft.value.length > 0) {
-      stats.value = {
-        ...stats.value,
-        commonAircraft: topAircraft.value[0].aircraftType
-      }
-    }
-  } catch (error) {
-    console.error('Error fetching aircraft data:', error)
-    topAircraft.value = []
-  }
-}
-
 // Fetch most common manufacturers data
 const fetchMostCommonManufacturers = async () => {
   try {
+    console.log('Fetching manufacturers data...')
     const response = await axios.get(`${API_BASE_URL}/crashes/most-common-manufacturers?limit=15`)
+    console.log('Manufacturers API response:', response.data)
+    
     topManufacturers.value = response.data.map(item => ({
       manufacturerName: item.manufacturerName,
       crashCount: item.crashCount,
@@ -441,6 +377,21 @@ const fetchMostCommonManufacturers = async () => {
       totalAboard: item.totalAboard,
       fatalityRate: item.fatalityRate
     }))
+    
+    console.log('Processed manufacturers:', topManufacturers.value)
+    
+    // Update common manufacturer in stats with the most common manufacturer
+    if (topManufacturers.value.length > 0) {
+      const mostCommonManufacturer = topManufacturers.value[0].manufacturerName
+      console.log('Setting most common manufacturer to:', mostCommonManufacturer)
+      
+      stats.value = {
+        ...stats.value,
+        commonAircraft: mostCommonManufacturer
+      }
+      
+      console.log('Updated stats:', stats.value)
+    }
   } catch (error) {
     console.error('Error fetching manufacturer data:', error)
     topManufacturers.value = []
@@ -884,14 +835,18 @@ const initializeCharts = () => {
 const fetchAllData = async () => {
   loading.value = true
   try {
+    // Fetch basic stats first
+    await fetchSummaryStats()
+    
+    // Then fetch all other data in parallel
     await Promise.all([
-      fetchSummaryStats(),
       fetchCrashesByYear(),
       fetchTopAirlines(),
-      fetchMostCommonAircraft(),
-      fetchMostCommonManufacturers(),
       fetchCrashesByContinent()
     ])
+    
+    // Fetch manufacturers last to ensure it updates the stats properly
+    await fetchMostCommonManufacturers()
     
     // Process derived data
     processGeographicData()

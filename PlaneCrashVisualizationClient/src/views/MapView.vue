@@ -33,14 +33,17 @@
 
 <script setup>
 import { onMounted, onUnmounted, watch, ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useMapFilters, useMap, useCrashData } from '../composables/index.js'
 import MapControls from '../components/MapControls.vue'
 import MapLegend from '../components/MapLegend.vue'
 import LoadingOverlay from '../components/LoadingOverlay.vue'
 
+const route = useRoute()
+
 // Composables
 const { filters, updateFiltersWithStatistics, buildApiParams } = useMapFilters()
-const { initializeMap, loadMarkers, destroyMap } = useMap()
+const { initializeMap, loadMarkers, destroyMap, highlightCrash } = useMap()
 const { 
   crashData, 
   operators, 
@@ -104,6 +107,20 @@ watch(statistics, (newStatistics) => {
 watch(crashData, (newData) => {
   if (newData && newData.length > 0) {
     loadMarkers(newData)
+    
+    // Check if we need to highlight and open popup for a specific crash
+    if (route.query.highlight && route.query.openPopup === 'true') {
+      const crashId = parseInt(route.query.highlight)
+      highlightCrash(crashId)
+    }
+  }
+}, { immediate: true })
+
+// Watch for route changes to handle direct navigation with highlight parameters
+watch(() => route.query, (newQuery) => {
+  if (newQuery.highlight && newQuery.openPopup === 'true' && crashData.value && crashData.value.length > 0) {
+    const crashId = parseInt(newQuery.highlight)
+    highlightCrash(crashId)
   }
 }, { immediate: true })
 </script>
