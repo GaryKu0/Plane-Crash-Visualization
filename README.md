@@ -55,7 +55,7 @@ Plane-Crash-Visualization/
 ### 1. Clone Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Argaros/Plane-Crash-Visualization
 cd Plane-Crash-Visualization
 ```
 
